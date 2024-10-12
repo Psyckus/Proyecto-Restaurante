@@ -15,7 +15,8 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 
         public IActionResult Index()
         {
-            return View();
+			ViewBag.NombreUsuario = HttpContext.Session.GetString("NombreUsuario");
+			return View();
         }
 
         public IActionResult Privacy()
