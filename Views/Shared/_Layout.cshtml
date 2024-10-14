@@ -37,6 +37,34 @@
     <link href="~/assets/css/volt2.css" rel="stylesheet" />
 	<!-- SweetAlert CSS -->
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+	<style>
+		/* Estilo normal del ícono y del nombre */
+		.user-icon {
+			color: white;
+			transition: color 0.3s ease;
+		}
+
+		.user-name {
+			color: white;
+			font-size: 1.2rem;
+			font-weight: bold;
+			margin-left: 8px;
+			transition: color 0.3s ease;
+		}
+
+		/* Estilo cuando se pasa el mouse sobre el ícono o el nombre */
+		.user-container:hover .user-icon,
+		.user-container:hover .user-name {
+			color: #F28123; /* Cambia el color al hacer hover */
+		}
+
+		/* Mejora la apariencia del nombre */
+		.user-name {
+			font-family: 'Arial', sans-serif; /* Cambia la fuente a una más estilizada */
+			letter-spacing: 0.5px; /* Espacia un poco las letras */
+			text-transform: capitalize; /* Asegura que la primera letra sea mayúscula */
+		}
+	</style>
 </head>
 <body>
 
@@ -56,55 +84,23 @@
 						<!-- menu start -->
 						<nav class="main-menu">
 							<ul>
-								<li class="current-list-item">
-									<a href="#">Home</a>
-									<ul class="sub-menu">
-										<li><a href="index.html">Static Home</a></li>
-										<li><a href="index_2.html">Slider Home</a></li>
-									</ul>
-								</li>
-								<li><a href="about.html">About</a></li>
-								<li>
-									<a href="#">Pages</a>
-									<ul class="sub-menu">
-										<li><a href="404.html">404 page</a></li>
-										<li><a href="about.html">About</a></li>
-										<li><a href="cart.html">Cart</a></li>
-										<li><a href="checkout.html">Check Out</a></li>
-										<li><a href="contact.html">Contact</a></li>
-										<li><a href="news.html">News</a></li>
-										<li><a href="shop.html">Shop</a></li>
-									</ul>
-								</li>
-								<li>
-									<a href="news.html">News</a>
-									<ul class="sub-menu">
-										<li><a href="news.html">News</a></li>
-										<li><a href="single-news.html">Single News</a></li>
-									</ul>
-								</li>
-								<li><a href="contact.html">Contact</a></li>
-								<li>
-									<a href="shop.html">Shop</a>
-									<ul class="sub-menu">
-										<li><a href="shop.html">Shop</a></li>
-										<li><a href="checkout.html">Check Out</a></li>
-										<li><a href="single-product.html">Single Product</a></li>
-										<li><a href="@Url.Action("Carrito","Home")">Cart</a></li>
-									</ul>
-								</li>
+							
+								<li ><a href="@Url.Action("Index","Home")">Inicio</a></li>
+					
+					
 								<li>
 									<div class="header-icons">
-										<a class="shopping-cart" href="@Url.Action("Carrito","Home")"><i class="fas fa-shopping-cart"></i></a>
+										<a class="shopping-cart" href="@Url.Action("Carrito","Restaurante")"><i class="fas fa-shopping-cart"></i></a>
 										<a class="user-container" href="#" data-bs-toggle="modal" data-bs-target="#modal-form">
 											<i class="fas fa-user fa-1x user-icon"></i>
 											<span id="user-name" class="user-name">@ViewBag.NombreUsuario</span>
+
 										</a>
 									</div>
 								</li>
 							</ul>
 						</nav>
-						<a class="mobile-show search-bar-icon" href="#"><i class="fas fa-search"></i></a>
+						<a class="mobile-show search-bar-icon" href="#"></a>
 						<div class="mobile-menu"></div>
 						<!-- menu end -->
 					</div>
@@ -161,7 +157,7 @@
 								<div class="g-recaptcha " data-sitekey="6LeS8V4qAAAAAJikCztlvJLDlpYfVSbMXL1nhJsc"></div>
 							</div>
 
-							<div class="d-grid">
+							<div class="d-grid" style="position:relative; top:5px;">
 								<button type="submit" class="btn btn-gray-800">Iniciar sesion</button>
 							</div>
 						</form>
@@ -211,8 +207,9 @@
 							<div class="d-flex justify-content-center ">
 								<div class="g-recaptcha " data-sitekey="6LeS8V4qAAAAAJikCztlvJLDlpYfVSbMXL1nhJsc"></div>
 							</div>
-				
-							<div class="d-grid">
+
+
+							<div class="d-grid" style="position:relative; top:5px;">
 								<button type="submit" class="btn btn-gray-800">Registrarse</button>
 							</div>
 						</form>
@@ -226,7 +223,7 @@
 		</div>
 	</div>
 	<!-- End of Modal Content -->
-    
+
      @RenderBody()
 
 
@@ -258,6 +255,7 @@
 
 
 		<script>
+
 
 		$(document).ready(function () {
 			// Capturar el clic en el enlace "Create account"
@@ -297,7 +295,9 @@
 						
 							// Restablecer el reCAPTCHA
 							grecaptcha.reset();
-							window.location.href = response.redirectUrl;  // Recarga la página
+							window.location.href = data.redirectUrl;
+							localStorage.setItem('userToken', data.token);// Recarga la página
+
 						});
 					} else {
 						Swal.fire({
@@ -370,7 +370,7 @@
 
 	<script src="~/assets/js/jquery-1.11.3.min.js"></script>
 	<!-- bootstrap -->
-
+	<script src="https://kit.fontawesome.com/67d992d243.js" crossorigin="anonymous"></script>
 
 	<!-- SweetAlert JS -->
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>

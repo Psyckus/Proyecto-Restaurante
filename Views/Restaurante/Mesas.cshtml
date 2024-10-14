@@ -1,0 +1,127 @@
+﻿@model IEnumerable<Mesas>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Responsive Bootstrap4 Shop Template, Created by Imran Hossain from https://imransdesign.com/">
+
+	<!-- title -->
+	<title>Shop</title>
+
+	<!-- favicon -->
+	<link rel="shortcut icon" type="image/png" href="assets/img/favicon.png">
+
+
+
+</head>
+<body>
+
+	<!--PreLoader-->
+	<div class="loader">
+		<div class="loader-inner">
+			<div class="circle"></div>
+		</div>
+	</div>
+	<!--PreLoader Ends-->
+	<!-- breadcrumb-section -->
+	<div class="breadcrumb-section breadcrumb-bg">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-8 offset-lg-2 text-center">
+					<div class="breadcrumb-text">
+						<p>Fresh and Organic</p>
+						<h1>Mesas disponibles</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end breadcrumb section -->
+	<!-- products -->
+	<div class="product-section mt-150 mb-150">
+		<div class="container">
+			<div class="row product-lists">
+				@foreach (var mesa in Model)
+				{
+					<div class="col-lg-4 col-md-6 text-center">
+						<div class="single-product-item">
+							<!-- Nombre de la mesa -->
+							<h3>@mesa.nombre</h3>
+
+							<!-- Capacidad de la mesa -->
+							<p class="product-price">
+								<span>Sillas disponibles:</span> @mesa.capacidad
+							</p>
+
+							<!-- Botón para reservar -->
+							<a class="cart-btn" data-bs-toggle="modal" data-bs-target="#reserva-form" onclick="setMesaId(@mesa.mesa_id)">
+								<i class="fa fa-cutlery"></i> Agendar reserva
+							</a>
+
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+	<!-- end products -->
+
+	<!-- Modal reservar mesa -->
+	<div class="modal fade" id="reserva-form" tabindex="-1" role="dialog" aria-labelledby="modal-form" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-body p-0">
+					<div class="card p-3 p-lg-4">
+						<button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+						<div class="text-center text-md-center mb-4 mt-md-0">
+							<h1 class="mb-0 h4">Agendar reserva</h1>
+						</div>
+
+						<form asp-action="AgendarReserva" id="form-login" asp-controller="Restaurante" method="post" class="mt-4">
+							<!-- Form -->
+							<div class="form-group mb-4">
+								<label for="email">Fecha de la reserva</label>
+								<div class="input-group">
+									<span class="input-group-text" id="basic-addon1">
+										<svg class="icon icon-xs text-gray-600" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+											<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h6v-2h-4z" />
+										</svg>
+
+									</span>
+									<input type="date" class="form-control" id="dateInput" name="fecha_reserva" required>
+									<input type="hidden" id="mesaId" name="mesaId" />
+								</div>
+							</div>
+							<!-- End of Form -->
+					
+
+							<div class="d-grid">
+								<button type="submit" class="btn btn-gray-800">Reservar</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- End of Modal Content -->
+	<!-- End of Modal Content -->
+
+	<script>
+		function setMesaId(mesaId) {
+			document.getElementById("mesaId").value = mesaId;
+		}
+
+		// Obtener la fecha actual
+		const today = new Date().toISOString().split('T')[0];
+
+		// Asignar la fecha actual como valor mínimo al input
+		document.getElementById("dateInput").setAttribute('min', today);
+	</script>
+
+</body>
+</html>

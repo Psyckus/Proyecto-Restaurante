@@ -1,5 +1,7 @@
-﻿@{
+﻿@model IEnumerable<MVW_Proyecto_Mesas_Comida.Models.Restaurante>
+@{
     ViewData["Title"] = "Home Page";
+
 }
 
 <!DOCTYPE html>
@@ -17,32 +19,25 @@
 	<link rel="shortcut icon" type="image/png" href="assets/img/favicon.png">
 
 	<style>
-	/* Estilo normal del ícono y del nombre */
-		.user-icon {
-			color: white;
-			transition: color 0.3s ease;
+
+		.single-product-item .product-image img {
+				max-height: 150px; /* Limita la altura máxima de la imagen */
+				width: auto;
+				object-fit: cover; /* Asegura que las imágenes se ajusten sin distorsión */
+				margin-bottom: 15px;
+			}
+
+		.single-product-item h3 {
+			font-size: 20px;
+			margin-bottom: 10px;
 		}
 
-		.user-name {
-			color: white;
-			font-size: 1.2rem;
-			font-weight: bold;
-			margin-left: 8px;
-			transition: color 0.3s ease;
+		.single-product-item .product-price {
+			flex-grow: 1; /* Permite que la descripción ocupe el espacio restante */
+			margin-bottom: 15px;
 		}
-
-		/* Estilo cuando se pasa el mouse sobre el ícono o el nombre */
-		.user-container:hover .user-icon,
-		.user-container:hover .user-name {
-			color: #F28123; /* Cambia el color al hacer hover */
-		}
-
-		/* Mejora la apariencia del nombre */
-		.user-name {
-			font-family: 'Arial', sans-serif; /* Cambia la fuente a una más estilizada */
-			letter-spacing: 0.5px; /* Espacia un poco las letras */
-			text-transform: capitalize; /* Asegura que la primera letra sea mayúscula */
-		}
+	
+	
 
 
 
@@ -98,37 +93,47 @@
 			</div>
 
 			<div class="row">
-				<div class="col-lg-4 col-md-6 text-center">
-					<div class="single-product-item">
-						<div class="product-image">
-							<a href="single-product.html"><img src="assets\img\restaurantes\res 1.jpg" alt=""></a><img src="" />
+				@foreach (var restaurante in Model)
+				{
+					<div class="col-lg-4 col-md-6 text-center">
+						<div class="single-product-item">
+							<div class="product-image">
+								<!-- Imagen dinámica -->
+								<a href="single-product.html"><img src="@($"assets/img/restaurantes/res{restaurante.restaurante_id}.jpg")" alt="@restaurante.nombre"></a>
+							</div>
+
+							<!-- Nombre del restaurante dinámico -->
+							<h3>@restaurante.nombre</h3>
+
+							<!-- Descripción del restaurante con truncado y tooltip -->
+							<p class="product-price" data-bs-toggle="tooltip" title="@restaurante.descripcion">
+								<span>Descripción:</span>
+								@if (restaurante.descripcion.Length > 100)
+								{
+									<text>@restaurante.descripcion.Substring(0, 50)...</text>
+								}
+								else
+								{
+									<text>@restaurante.descripcion</text>
+								}
+							</p>
+
+							<!-- Mostrar botón "Seleccionar" solo si el token es válido -->
+							@if (ViewBag.TokenValido)
+							{
+								<a href="@Url.Action("Mesas", "Restaurante", new { id = restaurante.restaurante_id })" class="cart-btn">Seleccionar</a>
+							}
+							else
+							{
+								<a href="#" class="cart-btn" disabled>No disponible</a>
+							}
 						</div>
-						<h3>Strawberry</h3>
-						<p class="product-price"><span>Per Kg</span> 85$ </p>
-						<a href="@Url.Action("Catalogo","Home")" class="cart-btn">Seleccionar</a>
 					</div>
-				</div>
-				<div class="col-lg-4 col-md-6 text-center">
-					<div class="single-product-item">
-						<div class="product-image">
-							<a href="single-product.html"><img src="assets\img\restaurantes\res 2.jpg" alt=""></a>
-						</div>
-						<h3>Berry</h3>
-						<p class="product-price"><span>Per Kg</span> 70$ </p>
-						<a href="cart.html" class="cart-btn">Seleccionar</a>
-					</div>
-				</div>
-				<div class="col-lg-4 col-md-6 offset-md-3 offset-lg-0 text-center">
-					<div class="single-product-item">
-						<div class="product-image">
-							<a href="single-product.html"><img src="assets\img\restaurantes\res 3.jpg" alt=""></a>
-						</div>
-						<h3>Lemon</h3>
-						<p class="product-price"><span>Per Kg</span> 35$ </p>
-						<a href="cart.html" class="cart-btn">Seleccionar</a>
-					</div>
-				</div>
+				}
+				
 			</div>
+
+
 		</div>
 	</div>
 	<!-- end product section -->
@@ -160,7 +165,15 @@
 	<script src="assets/js/main.js"></script>
 
 
+	@section Scripts {
+		<script>
+			var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+			var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+				return new bootstrap.Tooltip(tooltipTriggerEl)
+			})
 
+		</script>
+	}
 
 
 
