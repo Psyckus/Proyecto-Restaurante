@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using MVW_Proyecto_Mesas_Comida.Models;
 using MVW_Proyecto_Mesas_Comida.Services;
 using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace MVW_Proyecto_Mesas_Comida.Controllers
 {
@@ -9,11 +11,13 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 	{
 		private readonly IUsuarioService _usuarioService;
 		private readonly IAuthService _authService;
+		private readonly IDistributedCache _cache;
 
-		public UsuariosController(IUsuarioService usuarioService, IAuthService authService)
+		public UsuariosController(IUsuarioService usuarioService, IAuthService authService, IDistributedCache cache)
 		{
 			_usuarioService = usuarioService;
 			_authService = authService;
+			_cache = cache;
 		}
 
 
@@ -24,6 +28,7 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 			// Verificar contraseñas
 			if (contrasena != confirmarContrasena)
 			{
+
 				return Json(new { success = false, message = "Las contraseñas no coinciden." });
 			}
 
@@ -46,8 +51,28 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 			if (resultado)
 			{
 				var usuario = await _usuarioService.GetUsuarioByEmail(correo);
-				// Si el registro fue exitoso
-				HttpContext.Session.SetString("NombreUsuario", usuario.nombre);
+				// Supongamos que el usuario se autentica correctamente
+				var sessionKey = "UserSessionKey";
+				// Generar un token único para la sesión del usuario
+				var token = Guid.NewGuid().ToString();
+
+				// Crear un objeto que almacene el usuario_id y el token
+				var sessionData = new
+				{
+					nombre = usuario.nombre,
+					UsuarioId = usuario.usuario_id,
+					Token = token
+				};
+
+				// Guardar el nombre del usuario en Redis con un tiempo de expiración de 30 minutos
+				var cacheOptions = new DistributedCacheEntryOptions()
+					.SetSlidingExpiration(TimeSpan.FromMinutes(5)); // Expira en 30 minutos de inactividad
+																	// Serializa el objeto antes de guardarlo
+				var sessionDataSerialized = System.Text.Json.JsonSerializer.Serialize(sessionData);
+
+
+				await _cache.SetStringAsync(sessionKey, sessionDataSerialized, cacheOptions);
+
 				return Json(new { success = true, message = "Usuario registrado exitosamente." });
 			}
 
@@ -55,7 +80,7 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 			return Json(new { success = false, message = "Error al registrar el usuario." });
 		}
 
-		
+
 		[HttpPost]
 		public async Task<IActionResult> Login(Usuario model)
 		{
@@ -74,20 +99,51 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 				// Obtener el usuario por correo
 				var usuario = await _usuarioService.GetUsuarioByEmail(model.correo);
 
-				// Si se encontró el usuario, devolver su nombre
 				if (usuario != null)
 				{
-					HttpContext.Session.SetString("NombreUsuario", usuario.nombre);
+					// Supongamos que el usuario se autentica correctamente
+					var sessionKey = "UserSessionKey"; // Session Key única por usuario
+
+					// Generar un token único para la sesión del usuario
+					var token = Guid.NewGuid().ToString();
+
+					// Crear un objeto que almacene el usuario_id y el token
+					var sessionData = new
+					{
+						nombre = usuario.nombre,
+						UsuarioId = usuario.usuario_id,
+						Token = token
+					};
+
+					// Guardar el objeto serializado en Redis con un tiempo de expiración de 30 minutos
+					var cacheOptions = new DistributedCacheEntryOptions()
+						.SetSlidingExpiration(TimeSpan.FromMinutes(5)); // Expira en 30 minutos de inactividad
+
+					// Serializa el objeto antes de guardarlo
+					var sessionDataSerialized = System.Text.Json.JsonSerializer.Serialize(sessionData);
+					await _cache.SetStringAsync(sessionKey, sessionDataSerialized, cacheOptions);
+
 					// Verifica el rol del usuario
 					if (usuario.rol_id == 1) // 1 para Administrador
 					{
-						return Json(new { success = true, message = "Inicio de sesión exitoso.", redirectUrl = Url.Action("Index", "Dashboard") });
+						return Json(new
+						{
+							success = true,
+							message = "Inicio de sesión exitoso Administrador.",
+							redirectUrl = Url.Action("Index", "Dashboard"),
+				
+						});
 					}
 					else if (usuario.rol_id == 2) // 2 para Comprador
 					{
-						return Json(new { success = true, message = "Inicio de sesión exitoso.", redirectUrl = Url.Action("index", "Home") });
+						return Json(new
+						{
+							success = true,
+							message = "Inicio de sesión exitoso Comprador.",
+							redirectUrl = Url.Action("Index", "Home"),
+					
+						});
 					}
-			
 				}
 			}
 

@@ -13,6 +13,8 @@ namespace MVW_Proyecto_Mesas_Comida.Models
 
         public bool disponible { get; set; } = true;
 
+        public string nombre { get; set; }
+
         // Llave foránea
         public int restaurante_id { get; set; }
 

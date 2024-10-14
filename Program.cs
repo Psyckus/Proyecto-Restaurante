@@ -6,6 +6,12 @@ using MVW_Proyecto_Mesas_Comida.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
+// Configuración de Redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+	options.Configuration = "localhost:6379"; // La dirección de tu servidor Redis
+	options.InstanceName = "RedisCacheInstance";
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -14,16 +20,11 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Connection")));
 // Configurar el servicio de usuario
-builder.Services.AddScoped<IUsuarioService, UsuarioService>(); // Agrega esta línea
+builder.Services.AddScoped<IUsuarioService, UsuarioService>(); 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRestauranteService, RestauranteService>();
 
-// Añadir servicios de sesión
-builder.Services.AddSession(options =>
-{
-	options.IdleTimeout = TimeSpan.FromMinutes(30); // Establecer el tiempo de espera de la sesión
-	options.Cookie.HttpOnly = true; // Asegurar que la cookie de sesión no sea accesible por JavaScript
-	options.Cookie.IsEssential = true; // Hacer que la cookie de sesión sea esencial
-});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -38,8 +39,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-// Habilitar la sesión
-app.UseSession();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
