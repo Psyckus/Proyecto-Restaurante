@@ -28,13 +28,32 @@ namespace MVW_Proyecto_Mesas_Comida.Services
 			_context.SaveChanges();
 		}
 
-		public void Actualizar(Restaurante restaurante)
-		{
-			_context.Restaurantes.Update(restaurante);
-			_context.SaveChanges();
-		}
+        public async Task<Restaurante> Actualizar(Restaurante restauranteDto)
+        {
+            // Buscar el restaurante en la base de datos
+            var restaurante = await _context.Restaurantes.FindAsync(restauranteDto.restaurante_id);
 
-		public void Eliminar(int id)
+            if (restaurante == null)
+            {
+                return null; // Si no se encuentra el restaurante, retornamos null o manejamos el error de otra forma
+            }
+
+            // Actualizar los campos del restaurante
+            restaurante.nombre = restauranteDto.nombre;
+            restaurante.direccion = restauranteDto.direccion;
+            restaurante.descripcion = restauranteDto.descripcion;
+
+            // Actualizar el restaurante en el contexto
+            _context.Restaurantes.Update(restaurante);
+
+            // Guardar los cambios
+            await _context.SaveChangesAsync();
+
+            return restaurante;
+        }
+
+
+        public void Eliminar(int id)
 		{
 			var restaurante = _context.Restaurantes.Find(id);
 			if (restaurante != null)

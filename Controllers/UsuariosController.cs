@@ -112,6 +112,7 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 					{
 						nombre = usuario.nombre,
 						UsuarioId = usuario.usuario_id,
+                        rol_id = usuario.rol_id,
 						Token = token
 					};
 

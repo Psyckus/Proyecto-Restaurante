@@ -64,6 +64,28 @@
 			letter-spacing: 0.5px; /* Espacia un poco las letras */
 			text-transform: capitalize; /* Asegura que la primera letra sea mayúscula */
 		}
+		/* Estilos para el select */
+		.custom-product-filter {
+			width: 100%; /* Asegura que el select tenga el mismo ancho que el contenedor padre */
+			padding: 10px;
+			font-size: 16px;
+			border: 2px solid #000;
+			border-radius: 5px;
+			text-align: center; /* Centra el texto dentro del select */
+			background-color: #fff;
+			appearance: none; /* Oculta la flecha del select en algunos navegadores */
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			position: relative;
+			z-index: 1;
+			text-align-last: center; /* Centra el texto de la opción seleccionada */
+		}
+
+			/* Estilos para las opciones del select */
+			.custom-product-filter option {
+				text-align: center; /* Centra el texto de las opciones */
+			}
+
 	</style>
 </head>
 <body>
@@ -119,8 +141,6 @@
 						<div class="text-center text-md-center mb-4 mt-md-0">
 							<h1 class="mb-0 h4">Acceder</h1>
 						</div>
-				
-
 						<form asp-action="Login" id="form-login" asp-controller="Usuarios" method="post" class="mt-4">
 							<!-- Form -->
 							<div class="form-group mb-4">

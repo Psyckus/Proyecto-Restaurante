@@ -12,12 +12,16 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 		private readonly IRestauranteService _restauranteService;
 		private readonly IDistributedCache _cache;
 		private readonly ApplicationDbContext _context;
+		private readonly IReservaService _reservaService;
+		private readonly IPlatilloService _platilloService;
 
-		public RestauranteController(IRestauranteService restauranteService, IDistributedCache cache, ApplicationDbContext context)
+		public RestauranteController(IRestauranteService restauranteService, IDistributedCache cache, ApplicationDbContext context, IReservaService reservaService, IPlatilloService platilloService)
 		{
 			_restauranteService = restauranteService;
 			_cache = cache;
 			_context = context;
+			_reservaService = reservaService;
+			_platilloService = platilloService;
 		}
 
 		public IActionResult Index()
@@ -30,23 +34,45 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 		public async Task<IActionResult> Catalogo()
 		{
 			// Definir la clave de la cache
+			// Definir la clave de la cache
 			var sessionKey = "UserSessionKey";  // Puedes personalizar esta clave
 
 			// Recuperar el nombre de usuario desde Redis
-			var nombreUsuario = await _cache.GetStringAsync(sessionKey);
+			var sessionDataSerialized = await _cache.GetStringAsync(sessionKey);
+			if (sessionDataSerialized != null)
+			{
+				var sessionData = System.Text.Json.JsonSerializer.Deserialize<SessionData>(sessionDataSerialized);
+				if (!string.IsNullOrEmpty(sessionData.nombre))
+				{
+				
+					// Obtener el ID del usuario desde la sesión
+					var usuarioId = sessionData.UsuarioId;
 
-			if (!string.IsNullOrEmpty(nombreUsuario))
-			{
-				ViewBag.NombreUsuario = nombreUsuario;
-			}
-			else
-			{
-				ViewBag.NombreUsuario = "Invitado";
+					// Llamar al servicio para obtener las reservas del usuario
+					var reservas = await _reservaService.GetReservasPorUsuarioAsync(usuarioId);
+					ViewBag.NombreUsuario = sessionData.nombre;
+					ViewBag.Reservas = reservas;
+				}
+				else
+				{
+					ViewBag.NombreUsuario = "Invitado";
+				}
 			}
 
 			return View();
 
 		}
+		[HttpGet]
+		public async Task<IActionResult> GetPlatillosPorRestaurante(int restauranteId)
+		{
+
+
+		
+			var platillos = await _platilloService.GetPlatillosPorRestauranteAsync(restauranteId);
+			return Json(platillos); // Retornar los platillos como JSON
+		}
+
+
 		public async Task<IActionResult> Carrito()
 		{
 			// Definir la clave de la cache
@@ -146,7 +172,7 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 				await _context.SaveChangesAsync();
 			}
 
-			return Json(new { success = true, message = "Se agendo su reserva correctamente." });
+			return Json(new { success = true, message = "Se agendo su reserva correctamente.", redirectUrl = Url.Action("Catalogo", "Restaurante") });
 		}
 	
 	public IActionResult Detalles(int id)

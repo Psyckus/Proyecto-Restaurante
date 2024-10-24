@@ -13,15 +13,16 @@ namespace MVW_Proyecto_Mesas_Comida.Models
         public string nombre { get; set; }
 
         public string descripcion { get; set; }
-
-        [MaxLength(255)]
+        // Archivo de la nueva imagen que sube el usuario
+        [NotMapped]
+        public IFormFile? ImagenProducto { get; set; }
         public string imagen_url { get; set; }
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal precio { get; set; }
 
         // Llave foránea
-        public int RestauranteId { get; set; }
+        public int restaurante_id { get; set; }
 
         // Propiedad de navegación
         [ForeignKey("restaurante_id")]

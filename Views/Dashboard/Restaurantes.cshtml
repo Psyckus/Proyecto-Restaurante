@@ -1,0 +1,237 @@
+﻿@{
+    ViewBag.Title = "Restaurantes";
+    Layout = "_LayoutDashBoard";
+}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Menu de platillos</h3>
+        <div class="text-right">
+            <!-- Alinea el botón a la izquierda -->
+            <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#agregarResModal"><i class="fa-solid fa-wine-glass-empty"></i> Agregar</button>
+        </div>
+    </div>
+    <!-- Modal Restaurantes -->
+    <div class="modal fade" id="agregarResModal" tabindex="-1" role="dialog" aria-labelledby="agregarResModalLabel" aria-hidden="true">
+        <div class="modal-dialog " role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="agregarProductoModalLabel">Agregar Producto</h5>
+                    <button type="button" class="close" data-dismiss="modal" id="cerrarModal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form asp-action="GuardarRestaurante" asp-controller="Dashboard" method="post" id="formRes">
+                        <input type="hidden" name="restauranteId" id="restauranteId" />
+                   
+
+                        <div class="form-group">
+                            <label for="nombreProducto">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del restaurante" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nombreProducto">Direccion</label>
+                            <input type="text" class="form-control" id="direccion" name="direccion" placeholder="Direccion" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="descripcionProducto">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" placeholder="Descripción del restaurante" required></textarea>
+                        </div>
+            
+                        <div class="d-flex justify-content-center">
+                            <button type="button" class="btn btn-danger mx-2 flex-fill" id="cerrarModal2" data-dismiss="modal">Cerrar</button>
+                            <button type="submit" class="btn btn-dark mx-2 flex-fill" id="guardarProducto">Guardar</button>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- /.card-header -->
+    <div class="card-body">
+        <table id="example1" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                   
+                    <th>Nombre</th>
+                    <th>Direccion</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.restaurantes != null)
+                {
+                    foreach (var restaurante in ViewBag.restaurantes)
+                    {
+                        <tr>
+
+                            <td>@restaurante.nombre</td>
+                            <td>@restaurante.direccion</td>
+                            <td>@restaurante.descripcion</td>
+                            <td>
+                                <div class="d-flex justify-content-center" style="gap:5px;">
+                                    <button class="btn  btn-warning" onclick="editarRestaurante(@restaurante.restaurante_id)">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                    <button class="btn  btn-danger" onclick="eliminarRestaurante(@restaurante.restaurante_id)">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6">No se encontraron Restaurantes.</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Direccion</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </tfoot>
+        </table>
+
+    </div>
+    <!-- /.card-body -->
+</div>
+<script>
+    function editarRestaurante(id) {
+        $.ajax({
+            url: '@Url.Action("ObtenerRestaurante", "Dashboard")', // Llama a la acción que obtiene el restaurante
+            type: 'GET',
+            data: { id: id },
+            success: function (response) {
+                if (response.success) {
+                    // Rellenar los campos del modal con los datos obtenidos
+                    $('#nombre').val(response.data.nombre);
+                    $('#direccion').val(response.data.direccion);
+                    $('#descripcion').val(response.data.descripcion);
+                    $('#restauranteId').val(response.data.restaurante_id);
+                    // Asignar eventos para cerrar el modal
+                    $('#cerrarModal').on('click', function () {
+                        $('#agregarResModal').modal('hide');
+                    });
+                    $('#cerrarModal2').on('click', function () {
+                        $('#agregarResModal').modal('hide');
+                    });
+
+                    // Cambiar la acción del formulario para actualizar
+                    $('#formRes').attr('action', '@Url.Action("EditarRestaurante", "Dashboard")');
+
+                    // Mostrar el modal
+                    $('#agregarResModal').modal('show');
+
+                    // Limpiar el formulario al cerrar el modal
+                    $('#agregarResModal').on('hidden.bs.modal', function () {
+                        limpiarFormularioRestaurante();
+                    });
+
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function () {
+                Swal.fire('Error', 'Error al obtener los datos del restaurante.', 'error');
+            }
+        });
+
+        // Manejar el envío del formulario con AJAX
+        $('#formRes').on('submit', function (e) {
+            e.preventDefault(); // Evitar el envío normal del formulario
+
+            var form = $(this);
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(), // Serializar los datos del formulario
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: response.message
+                        }).then(() => {
+                            // Cerrar el modal y recargar la página
+                            $('#agregarResModal').modal('hide');
+                            location.reload(); // Recargar la página para reflejar los cambios
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al actualizar el restaurante.'
+                    });
+                }
+            });
+        });
+    }
+
+    function limpiarFormularioRestaurante() {
+        $('#formRes').trigger('reset'); // Limpiar el formulario
+    }
+
+    function eliminarRestaurante(id) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¡No podrás revertir esto!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#000000',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminarlo'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '@Url.Action("EliminarRestaurante", "Dashboard")', // Acción para eliminar restaurante
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Eliminado',
+                                text: response.message
+                            }).then(() => {
+                                location.reload(); // Recargar la página para reflejar los cambios
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al eliminar el restaurante.'
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+</script>

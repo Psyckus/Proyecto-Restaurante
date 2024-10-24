@@ -7,7 +7,8 @@ namespace MVW_Proyecto_Mesas_Comida.Services
 		IEnumerable<Restaurante> ObtenerTodos();
 		Restaurante ObtenerPorId(int id);
 		void Agregar(Restaurante restaurante);
-		void Actualizar(Restaurante restaurante);
-		void Eliminar(int id);
+	
+        Task<Restaurante> Actualizar(Restaurante restauranteDto);
+        void Eliminar(int id);
 	}
 }
