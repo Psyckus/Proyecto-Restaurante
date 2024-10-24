@@ -81,7 +81,7 @@
 							<h1 class="mb-0 h4">Agendar reserva</h1>
 						</div>
 
-						<form asp-action="AgendarReserva" id="form-login" asp-controller="Restaurante" method="post" class="mt-4">
+						<form asp-action="AgendarReserva" id="formReserva" asp-controller="Restaurante" method="post" class="mt-4">
 							<!-- Form -->
 							<div class="form-group mb-4">
 								<label for="email">Fecha de la reserva</label>
@@ -121,6 +121,48 @@
 
 		// Asignar la fecha actual como valor mínimo al input
 		document.getElementById("dateInput").setAttribute('min', today);
+
+		document.getElementById('formReserva').addEventListener('submit', async function (event) {
+			event.preventDefault(); // Evita el envío por defecto
+
+			// Crear un objeto FormData para enviar todos los datos
+			const formData = new FormData(this);
+
+			try {
+				// Enviar los datos con fetch
+				const response = await fetch(this.action, {
+					method: this.method,
+					body: formData
+				});
+
+				const result = await response.json();
+
+				if (result.success) {
+					Swal.fire({
+						icon: 'success',
+						title: '¡Éxito!',
+						text: result.message
+					}).then(() => {
+						// Esperar 3 segundos antes de recargar la página
+						setTimeout(() => {
+							window.location.href = result.redirectUrl;
+						}, 3000);
+					});
+				} else {
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: result.message
+					});
+				}
+			} catch (error) {
+				Swal.fire({
+					icon: 'error',
+					title: 'Error',
+					text: 'Error al actualizar el usuario: ' + error.message
+				});
+			}
+		});
 	</script>
 
 </body>

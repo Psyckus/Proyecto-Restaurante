@@ -6,12 +6,14 @@ using MVW_Proyecto_Mesas_Comida.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
 // Configuración de Redis
 builder.Services.AddStackExchangeRedisCache(options =>
 {
 	options.Configuration = "localhost:6379"; // La dirección de tu servidor Redis
 	options.InstanceName = "RedisCacheInstance";
 });
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -20,12 +22,20 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Connection")));
 // Configurar el servicio de usuario
+
+builder.Services.AddScoped<IReservaService, ReservaService>();
+
 builder.Services.AddScoped<IUsuarioService, UsuarioService>(); 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRestauranteService, RestauranteService>();
+builder.Services.AddScoped<IPlatilloService, PlatilloService>();
+builder.Services.AddScoped<SessionAuthorizeAttribute>(); // Asegúrate de registrar el filtro en el contenedor de DI
+
+builder.Services.AddControllersWithViews();
 
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -36,6 +46,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseStaticFiles();
 
 app.UseRouting();

@@ -1,0 +1,365 @@
+﻿@{
+    ViewBag.Title = "Platillos";
+    Layout = "_LayoutDashBoard";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Menu de platillos</h3>
+        <div class="text-right">
+            <!-- Alinea el botón a la izquierda -->
+            <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#agregarProductoModal"><i class="fa fa-pizza-slice"></i> Agregar</button>
+        </div>
+    </div>
+        <!-- Modal products -->
+            <div class="modal fade" id="agregarProductoModal" tabindex="-1" role="dialog" aria-labelledby="agregarProductoModalLabel" aria-hidden="true">
+                <div class="modal-dialog " role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="agregarProductoModalLabel">Agregar Producto</h5>
+                            <button type="button" class="close" data-dismiss="modal" id="cerrarModal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form asp-action="GuardarProducto" asp-controller="Dashboard" method="post" id="formProducto" enctype="multipart/form-data">
+                                <input type="hidden" id="imagenOriginal" name="imagenOriginal" />
+                                <input type="hidden" id="platillo_id" name="platillo_id" />
+                            <input type="hidden" id="restauranteId" name="restauranteId"/>
+                            <input type="hidden" id="imagenCambiada" name="imagenCambiada" value="false">
+
+  
+                                <div class="form-group">
+                                    <div style="text-align: center;">
+                                        <label for="imagenProducto">Imagen</label>
+                                   </div>
+                                    <!-- FilePond contenedor de imagen -->
+                                   <input type="file" class="filepond" id="imagenProducto" name="imagenProducto" /> 
+                                </div>
+                                <div class="form-group">
+                                    <label for="restauranteSelect">Restaurante</label>
+                                    <select class="form-control" id="restauranteSelect" name="restauranteSelect">
+                                        <option selected disabled value="">Seleccione un restaurante</option>
+                                        @foreach (var restaurante in Model)
+                                        {
+                                            <option value="@restaurante.restaurante_id">@restaurante.nombre</option>
+                                        }
+                                    </select>
+                
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="nombreProducto">Nombre</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del producto" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="descripcionProducto">Descripción</label>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="3" placeholder="Descripción del producto" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="precioProducto">Precio</label>
+                                <input type="number" class="form-control" id="precio" name="precio" placeholder="Precio" required>
+                                </div>
+                                <div class="d-flex justify-content-center">
+                                <button type="button" class="btn btn-danger mx-2 flex-fill" id="cerrarModal2" data-dismiss="modal">Cerrar</button>
+                                    <button type="submit" class="btn btn-dark mx-2 flex-fill" id="guardarProducto">Guardar</button>
+                                </div>
+
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+              
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <!-- /.card-header -->
+    <div class="card-body">
+        <table id="example1" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Restaurante</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.Platillos != null)
+                {
+                    foreach (var platillo in ViewBag.Platillos)
+                    {
+                        <tr>
+                            <td><img src="@platillo.imagen_url" width="100" height="100" /></td>
+                            <td>@platillo.nombre</td>
+                            <td>@platillo.descripcion</td>
+                            <td>@platillo.precio</td>
+                            <td>@platillo.Restaurante.nombre</td>
+                            <td>
+                                <div class="d-flex justify-content-center" style="gap:5px;">
+                                <button class="btn  btn-warning" onclick="editarPlatillo(@platillo.platillo_id)">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn  btn-danger" onclick="eliminarPlatillo(@platillo.platillo_id)">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6">No se encontraron platillos.</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Restaurante</th>
+                    <th>Acciones</th>
+                </tr>
+            </tfoot>
+        </table>
+
+    </div>
+    <!-- /.card-body -->
+</div>
+<script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+<!-- include FilePond plugins -->
+
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+
+    
+<script src="https://unpkg.com/filepond-plugin-image-edit/dist/filepond-plugin-image-edit.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-exif-orientation/dist/filepond-plugin-image-exif-orientation.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-crop/dist/filepond-plugin-image-crop.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-resize/dist/filepond-plugin-image-resize.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-transform/dist/filepond-plugin-image-transform.js"></script>
+
+
+<script>
+    // Registrar plugins de FilePond
+    FilePond.registerPlugin(
+        FilePondPluginImagePreview,
+        FilePondPluginFileValidateSize,
+        FilePondPluginImageCrop,
+        FilePondPluginImageResize,
+        FilePondPluginImageExifOrientation,
+        FilePondPluginImageTransform,
+        FilePondPluginFileValidateType
+    );
+
+    // Inicializar FilePond en el input de archivo
+    const pond = FilePond.create(document.querySelector('#imagenProducto'), {
+        allowImagePreview: true,
+        imagePreviewHeight: 200,
+        labelIdle: 'Arrastra y suelta tu imagen o <span class="filepond--label-action">Explorar</span>',
+        stylePanelAspectRatio: 1,
+        imageCropAspectRatio: '1:1',
+        imageResizeTargetWidth: 200,
+        imageResizeTargetHeight: 200,
+        allowProcess: false
+    });
+
+    // Función para abrir el modal y cargar los datos del platillo
+    function editarPlatillo(id) {
+        $.ajax({
+            url: '@Url.Action("ObtenerPlatillo", "Dashboard")',
+            type: 'GET',
+            data: { id: id },
+            success: function (response) {
+                if (response.success) {
+                    // Rellenar los campos del modal
+                    $('#nombre').val(response.data.nombre);
+                    $('#descripcion').val(response.data.descripcion);
+                    $('#precio').val(response.data.precio);
+                    $('#restauranteSelect').val(response.data.restaurante_id);
+
+                    // Guardar la URL de la imagen original en el campo oculto
+                    $('#imagenOriginal').val(response.data.imagen_url);
+
+                    // Asignar el valor del ID del platillo al input oculto
+                    $('#platillo_id').val(id);
+                    $('#restauranteId').val(response.data.restaurante_id);
+
+                    // Cambiar la acción del formulario
+                    $('#formProducto').attr('action', '@Url.Action("EditarPlatillo", "Dashboard")');
+                    // Asignar eventos para cerrar el modal
+                    $('#cerrarModal').on('click', function () {
+                        $('#agregarProductoModal').modal('hide');
+                    });
+                    $('#cerrarModal2').on('click', function () {
+                        $('#agregarProductoModal').modal('hide');
+                    });
+                    // Mostrar el modal
+                    $('#agregarProductoModal').modal('show');
+
+                    // Esperar a que el modal esté completamente visible
+                    $('#agregarProductoModal').on('shown.bs.modal', function () {
+                        // Cargar la imagen en FilePond
+                        cargarImagenEnFilePond(response.data.imagen_url);
+                    });
+
+                    // Limpiar el formulario al cerrar el modal
+                    $('#agregarProductoModal').on('hidden.bs.modal', function () {
+                        limpiarFormularioProducto();
+                    });
+
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function () {
+                Swal.fire('Error', 'Error al obtener los datos del platillo.', 'error');
+            }
+        });
+    }
+
+    // Función para limpiar el formulario del modal
+    function limpiarFormularioProducto() {
+        $('#formProducto').trigger('reset');
+        if (pond) {
+            pond.removeFiles();
+        }
+        $('#restauranteSelect').val('').trigger('change');
+        $('#imagenOriginalHidden').remove();
+    }
+
+    // Función para cargar la imagen en FilePond
+    function cargarImagenEnFilePond(imageUrl) {
+        pond.removeFiles(); // Limpia archivos previos
+        if (imageUrl) {
+            fetch(imageUrl)
+                .then(response => response.blob())
+                .then(blob => {
+                    const file = new File([blob], 'imagen.jpg', { type: blob.type });
+                    pond.addFile(file); // Añade el archivo a FilePond
+                })
+                .catch(error => console.error('Error al cargar la imagen:', error));
+        }
+    }
+
+    // Manejo de cambio de restaurante
+    document.getElementById('restauranteSelect').addEventListener('change', function () {
+        var selectedRestauranteId = this.value;
+        document.getElementById('restauranteId').value = selectedRestauranteId;
+    });
+
+    // Evento submit del formulario
+    document.getElementById('formProducto').addEventListener('submit', async function (event) {
+        event.preventDefault(); // Evita el envío por defecto
+
+        // Crear un objeto FormData para enviar todos los datos
+        const formData = new FormData(this);
+
+        // Procesar archivo de FilePond
+        const files = pond.getFiles();
+
+        if (files.length > 0) {
+            formData.append('imagenProducto', files[0].file); // Añadir archivo de FilePond
+            formData.set('imagenCambiada', 'true'); // Marca que la imagen ha cambiado
+        } else {
+            formData.set('imagenCambiada', 'false'); // No se cambió la imagen
+        }
+
+        try {
+            // Enviar los datos con fetch
+            const response = await fetch(this.action, {
+                method: this.method,
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: result.message
+                }).then(() => {
+                    // Esperar 5 segundos antes de recargar la página
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: result.message
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al guardar el producto: ' + error.message
+            });
+        }
+    });
+
+    function eliminarPlatillo(id) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¡No podrás revertir esto!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#000000',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminarlo'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '@Url.Action("EliminarPlatillo", "Dashboard")', // URL de la acción del controlador
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Eliminado',
+                                text: response.message
+                            }).then(() => {
+                                location.reload(); // Recargar la página para reflejar los cambios
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al eliminar el platillo.'
+                        });
+                    }
+                });
+            }
+        });
+    }
+</script>
+
+
+
+
+
+
+
+
+
+   

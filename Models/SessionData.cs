@@ -5,5 +5,6 @@
 		public int UsuarioId { get; set; }
 		public string Token { get; set; }
 		public string nombre { get; set; }
+		public int rol_id { get; set; }
 	}
 }

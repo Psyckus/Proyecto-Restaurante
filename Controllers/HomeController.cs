@@ -19,7 +19,7 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 			_restauranteService = restauranteService;
 		}
 
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> Index()
         {
 		
 			// Definir la clave de la cache
@@ -42,9 +42,8 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 				{
 					ViewBag.NombreUsuario = "Invitado";
 				}
-
-				// Verifica si el token es válido
-				if (sessionData?.Token != null)
+                // Verifica si el token es válido
+                if (sessionData?.Token != null)
                 {
                     ViewBag.TokenValido = true;
                 }
@@ -52,6 +51,13 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
                 {
                     ViewBag.TokenValido = false;
                 }
+                if (sessionData?.rol_id == 1)
+				{
+					return RedirectToAction("Index", "Dashboard");
+				}
+			
+
+		
             }
             else
             {
