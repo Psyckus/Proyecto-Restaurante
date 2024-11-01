@@ -120,9 +120,9 @@
         <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
-            <a href="index3.html" class="brand-link">
+            <a href="@Url.Action("Index","Dashboard")" class="brand-link">
     
-                <span class="brand-text font-weight-light" style="position:relative; left:70px;">AdminLTE 3</span>
+                <span class="brand-text font-weight-light" style="position:relative; left:70px;">DASHBOARD</span>
             </a>
 
             <!-- Sidebar -->
@@ -131,7 +131,7 @@
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                 
                     <div class="info" style="position:relative; left:50px;">
-                        <a href="#" class="d-block">Alexander Pierce</a>
+                        <a href="#" class="d-block">@ViewBag.NombreUsuario</a>
                     </div>
                 </div>
 

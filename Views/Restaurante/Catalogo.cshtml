@@ -33,10 +33,9 @@
 			<div class="col-md-12 text-center">
 				<label for="customProductFilter" class="form-label custom-label">Fecha de reserva:</label>
 				<input type="hidden" id="hiddenRestauranteId" name="restauranteId" value="">
-
+				<input type="hidden" id="hiddenReservaId" name="reservaId" value="">
 				<select id="customProductFilter" class="custom-product-filter" aria-label="Seleccionar reserva">
 					<option value="" selected disabled>Selecciona una fecha</option>
-			
 
 					@if (ViewBag.Reservas != null)
 					{
@@ -44,13 +43,19 @@
 						foreach (var reserva in ViewBag.Reservas)
 						{
 							<option value="@reserva.reserva_id" data-restaurante-id="@reserva.Mesa.restaurante_id">
-								@reserva.Mesa.nombre, Fecha: @reserva.fecha_reserva.ToString("dd/MM/yyyy")
+								Restaurante: @reserva.Mesa.Restaurante.nombre, @reserva.Mesa.nombre, Fecha: @reserva.fecha_reserva.ToString("dd/MM/yyyy")
+						
 							</option>
 						}
 					}
 				</select>
+				<!-- Botón para eliminar la reserva seleccionada -->
+				<button type="button" id="eliminarReservaBtn" class="btn btn-danger mt-3" disabled>
+					<i class="fa fa-trash-o"></i> Eliminar reserva
+				</button>
 			</div>
 		</div>
+
 
 
 
@@ -70,7 +75,10 @@
 
 		// Obtener el restaurante_id del atributo data-restaurante-id
 		var restauranteId = selectedOption.getAttribute('data-restaurante-id');
+		const reservaId = selectedOption.value;
 
+		// Guardar el reservaId en el input oculto
+		document.getElementById("hiddenReservaId").value = reservaId;
 		// Asignar el restauranteId al input oculto
 		document.getElementById("hiddenRestauranteId").value = restauranteId;
 
@@ -114,3 +122,67 @@
 </script>
 
 
+<script>
+	document.getElementById("customProductFilter").addEventListener("change", function () {
+		const eliminarBtn = document.getElementById("eliminarReservaBtn");
+		eliminarBtn.disabled = this.value === ""; // Habilita el botón solo si hay un valor seleccionado
+	});
+
+
+	document.getElementById("eliminarReservaBtn").addEventListener("click", function () {
+		const reservaId = document.getElementById("hiddenReservaId").value;
+
+
+		if (reservaId) {
+			const urlEliminarReserva = '@Url.Action("EliminarReserva", "Restaurante")';
+
+			const formData = new FormData();
+			formData.append("reservaId", reservaId);
+
+			$.ajax({
+				url: urlEliminarReserva,
+				type: "POST",
+				processData: false,
+				contentType: false,
+				data: formData,
+				success: function (result) {
+					if (result.success) {
+						Swal.fire({
+							icon: 'success',
+							title: 'Éxito',
+							text: result.message,
+							confirmButtonText: 'OK'
+						}).then((result) => {
+							if (result.isConfirmed) {
+								// Recarga la página después de cerrar el SweetAlert
+								location.reload();
+							}
+						});
+					} else {
+						Swal.fire({
+							icon: 'error',
+							title: 'Error',
+							text: "No se pudo eliminar la reserva: " + result.message,
+							confirmButtonText: 'OK'
+						});
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error("Error en la respuesta del servidor:", error);
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: "Error al intentar eliminar la reserva.",
+						confirmButtonText: 'OK'
+					});
+				}
+			});
+		}
+	});
+
+
+
+
+
+
+</script>

@@ -11,75 +11,72 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
         private readonly ILogger<HomeController> _logger;
 		private readonly IDistributedCache _cache;
 		private readonly IRestauranteService _restauranteService;
+		private readonly IReservaService _reservaService;
 
-		public HomeController(ILogger<HomeController> logger, IDistributedCache cache, IRestauranteService restauranteService)
+		public HomeController(ILogger<HomeController> logger, IDistributedCache cache, IRestauranteService restauranteService, IReservaService reservaService)
         {
             _logger = logger;
 			_cache = cache;
 			_restauranteService = restauranteService;
+			_reservaService = reservaService;
 		}
 
-        public async Task<IActionResult> Index()
-        {
-		
+		public async Task<IActionResult> Index()
+		{
 			// Definir la clave de la cache
-			var sessionKey = "UserSessionKey";// Puedes personalizar esta clave
+			var sessionKey = "UserSessionKey"; // Personaliza esta clave si es necesario
 
-	
-			 // Recupera el objeto de sesión serializado desde Redis
-            var sessionDataSerialized = await _cache.GetStringAsync(sessionKey);
-			// Deserializa el objeto de sesión
-		
+			// Recupera el objeto de sesión serializado desde Redis
+			var sessionDataSerialized = await _cache.GetStringAsync(sessionKey);
 
+			// Deserializa el objeto de sesión si existe
 			if (sessionDataSerialized != null)
-            {
+			{
 				var sessionData = System.Text.Json.JsonSerializer.Deserialize<SessionData>(sessionDataSerialized);
-				if (!string.IsNullOrEmpty(sessionData.nombre))
-				{
-					ViewBag.NombreUsuario = sessionData.nombre;
-				}
-				else
-				{
-					ViewBag.NombreUsuario = "Invitado";
-				}
-                // Verifica si el token es válido
-                if (sessionData?.Token != null)
-                {
-                    ViewBag.TokenValido = true;
-                }
-                else
-                {
-                    ViewBag.TokenValido = false;
-                }
-                if (sessionData?.rol_id == 1)
+
+				// Obtener usuarioId desde la sesión
+				int usuarioId = sessionData.UsuarioId;
+
+				// Obtener reservas del usuario
+				var reservas = await _reservaService.GetReservasPorUsuarioAsync(usuarioId);
+
+				// Guardar en ViewBag si el usuario tiene reservas
+				ViewBag.TieneReservas = reservas != null && reservas.Any();
+
+				// Establecer el nombre del usuario para mostrar en la navegación
+				ViewBag.NombreUsuario = !string.IsNullOrEmpty(sessionData.nombre) ? sessionData.nombre : "Invitado";
+
+				// Verificar si el token es válido
+				ViewBag.TokenValido = sessionData?.Token != null;
+
+				// Si el usuario es administrador (rol_id == 1), redirigir al Dashboard
+				if (sessionData?.rol_id == 1)
 				{
 					return RedirectToAction("Index", "Dashboard");
 				}
-			
+			}
+			else
+			{
+				// Si no hay sesión, configurar valores por defecto en ViewBag
+				ViewBag.TokenValido = false;
+				ViewBag.NombreUsuario = "Invitado";
+				ViewBag.TieneReservas = false;
+			}
 
-		
-            }
-            else
-            {
-                ViewBag.TokenValido = false;
-                ViewBag.NombreUsuario = "Invitado";
-            }
-
-		
-
+			// Obtener la lista de restaurantes
 			var restaurantes = _restauranteService.ObtenerTodos();
 			var viewModel = restaurantes.Select(r => new Restaurante
 			{
 				restaurante_id = r.restaurante_id,
 				nombre = r.nombre,
 				descripcion = r.descripcion,
-
 			});
 
 			return View(viewModel);
-        }
+		}
 
-        public IActionResult Privacy()
+
+		public IActionResult Privacy()
         {
             return View();
         }

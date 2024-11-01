@@ -1,4 +1,5 @@
-﻿using MVW_Proyecto_Mesas_Comida.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using MVW_Proyecto_Mesas_Comida.Data;
 using MVW_Proyecto_Mesas_Comida.Models;
 
 namespace MVW_Proyecto_Mesas_Comida.Services
@@ -62,5 +63,10 @@ namespace MVW_Proyecto_Mesas_Comida.Services
 				_context.SaveChanges();
 			}
 		}
-	}
+        public async Task<int> ContadorRestaurantes()
+        {
+            return await _context.Restaurantes.CountAsync();
+        }
+
+    }
 }

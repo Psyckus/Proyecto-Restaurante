@@ -83,6 +83,9 @@ namespace MVW_Proyecto_Mesas_Comida.Services
 				.Where(p => p.restaurante_id == restauranteId)
 				.ToListAsync();
 		}
-
-	}
+        public async Task<int> ContarPlatillos()
+        {
+            return await _context.Platillos.CountAsync();
+        }
+    }
 }

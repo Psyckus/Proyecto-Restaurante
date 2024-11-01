@@ -23,6 +23,11 @@ namespace MVW_Proyecto_Mesas_Comida.Services
 				.Include(r => r.Usuario)  // Incluir detalles del Usuario
 				.ToListAsync();
 		}
+		public async Task<int> ContarNuevasReservasAsync()
+		{
+			return await _context.Reservas.CountAsync();
+		}
+
 
 	}
 

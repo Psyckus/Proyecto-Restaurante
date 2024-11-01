@@ -10,5 +10,6 @@ namespace MVW_Proyecto_Mesas_Comida.Services
 	
         Task<Restaurante> Actualizar(Restaurante restauranteDto);
         void Eliminar(int id);
-	}
+        Task<int> ContadorRestaurantes();
+    }
 }

@@ -5,5 +5,6 @@ namespace MVW_Proyecto_Mesas_Comida.Services
 	public interface IReservaService
 	{
 		Task<IEnumerable<Reservas>> GetReservasPorUsuarioAsync(int usuarioId);
+		Task<int> ContarNuevasReservasAsync();
 	}
 }

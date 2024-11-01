@@ -130,6 +130,10 @@ namespace MVW_Proyecto_Mesas_Comida.Services
             return _context.Usuarios.Find(id);
         }
 
+        public async Task<int> ContarUsuariosAsync()
+        {
+            return await _context.Usuarios.CountAsync();
+        }
 
     }
 }

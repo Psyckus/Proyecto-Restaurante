@@ -34,34 +34,40 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 		public async Task<IActionResult> Catalogo()
 		{
 			// Definir la clave de la cache
-			// Definir la clave de la cache
-			var sessionKey = "UserSessionKey";  // Puedes personalizar esta clave
+			var sessionKey = "UserSessionKey";  // Personaliza esta clave si es necesario
 
-			// Recuperar el nombre de usuario desde Redis
+			// Recuperar el objeto de sesión serializado desde Redis
 			var sessionDataSerialized = await _cache.GetStringAsync(sessionKey);
+
+			// Deserializar el objeto de sesión si existe
 			if (sessionDataSerialized != null)
 			{
 				var sessionData = System.Text.Json.JsonSerializer.Deserialize<SessionData>(sessionDataSerialized);
-				if (!string.IsNullOrEmpty(sessionData.nombre))
-				{
-				
-					// Obtener el ID del usuario desde la sesión
-					var usuarioId = sessionData.UsuarioId;
 
-					// Llamar al servicio para obtener las reservas del usuario
-					var reservas = await _reservaService.GetReservasPorUsuarioAsync(usuarioId);
-					ViewBag.NombreUsuario = sessionData.nombre;
-					ViewBag.Reservas = reservas;
-				}
-				else
-				{
-					ViewBag.NombreUsuario = "Invitado";
-				}
+				// Obtener el ID del usuario desde la sesión
+				int usuarioId = sessionData.UsuarioId;
+
+				// Obtener las reservas del usuario si está logueado
+				var reservas = await _reservaService.GetReservasPorUsuarioAsync(usuarioId);
+
+				// Guardar el nombre del usuario en ViewBag
+				ViewBag.NombreUsuario = !string.IsNullOrEmpty(sessionData.nombre) ? sessionData.nombre : "Invitado";
+
+				// Guardar las reservas en ViewBag para mostrarlas en la vista si es necesario
+				ViewBag.TieneReservas = reservas != null && reservas.Any();
+				ViewBag.Reservas = reservas;
+			}
+			else
+			{
+				// Si no hay sesión, configurar valores por defecto en ViewBag
+				ViewBag.NombreUsuario = "Invitado";
+				ViewBag.TieneReservas = false;
+				ViewBag.Reservas = null;
 			}
 
 			return View();
-
 		}
+
 		[HttpGet]
 		public async Task<IActionResult> GetPlatillosPorRestaurante(int restauranteId)
 		{
@@ -96,25 +102,37 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 		public async Task<IActionResult> Mesas(int id)
 		{
 			// Definir la clave de la cache
-			var sessionKey = "UserSessionKey";  // Puedes personalizar esta clave
+			var sessionKey = "UserSessionKey";  // Personaliza esta clave si es necesario
 
-			// Recuperar el nombre de usuario desde Redis
+			// Recuperar el objeto de sesión serializado desde Redis
 			var sessionDataSerialized = await _cache.GetStringAsync(sessionKey);
+
+			// Deserializar el objeto de sesión si existe
 			if (sessionDataSerialized != null)
 			{
 				var sessionData = System.Text.Json.JsonSerializer.Deserialize<SessionData>(sessionDataSerialized);
-				if (!string.IsNullOrEmpty(sessionData.nombre))
-				{
-					ViewBag.NombreUsuario = sessionData.nombre;
-				}
-				else
-				{
-					ViewBag.NombreUsuario = "Invitado";
-				}
+
+				// Obtener el ID del usuario desde la sesión
+				int usuarioId = sessionData.UsuarioId;
+
+				// Obtener las reservas del usuario si está logueado
+				var reservas = await _reservaService.GetReservasPorUsuarioAsync(usuarioId);
+
+				// Guardar el nombre del usuario en ViewBag
+				ViewBag.NombreUsuario = !string.IsNullOrEmpty(sessionData.nombre) ? sessionData.nombre : "Invitado";
+
+				// Guardar las reservas en ViewBag para mostrarlas en la vista si es necesario
+				ViewBag.TieneReservas = reservas != null && reservas.Any();
+				ViewBag.Reservas = reservas;
+			}
+			else
+			{
+				// Si no hay sesión, configurar valores por defecto en ViewBag
+				ViewBag.NombreUsuario = "Invitado";
+				ViewBag.TieneReservas = false;
+				ViewBag.Reservas = null;
 			}
 
-
-				
 			var mesasDisponibles = _context.Mesas
 									.Where(m => m.restaurante_id == id && m.disponible)
 									.ToList();
@@ -185,6 +203,29 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
 			return View(restaurante);
 		}
 
-		// Métodos para Crear, Editar, Eliminar...
+		[HttpPost]
+		public async Task<JsonResult> EliminarReserva(int reservaId) 
+		{
+			var reserva = await _context.Reservas.FindAsync(reservaId);
+			if (reserva != null)
+			{
+				_context.Reservas.Remove(reserva);
+				var mesa = await _context.Mesas.FindAsync(reserva.mesa_id);
+				if (mesa != null)
+				{
+					mesa.disponible = true;
+					_context.Mesas.Update(mesa);
+				}
+				await _context.SaveChangesAsync();
+
+				return Json(new { success = true, message = "Reserva eliminada correctamente." });
+			}
+
+			return Json(new { success = false, message = "La reserva no existe." });
+		}
+
+
+
+
 	}
 }

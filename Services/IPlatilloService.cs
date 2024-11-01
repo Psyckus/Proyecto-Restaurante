@@ -11,5 +11,6 @@ namespace MVW_Proyecto_Mesas_Comida.Services
         Task<Platillos> GetPlatilloById(int id); // Método para obtener un platillo por su ID
         Task<Platillos> UpdatePlatillo(Platillos platilloDto); // Método para actualizar un platillo
         Task DeletePlatillo(int id);
+        Task<int> ContarPlatillos();
     }
 }

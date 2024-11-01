@@ -14,25 +14,39 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
         private readonly IRestauranteService _restauranteService;
         private readonly IPlatilloService _platilloService;
         private readonly IUsuarioService _usuarioService;
+        private readonly IReservaService _reservaService;
         private const string sessionKey = "UserSessionKey";
-        public DashboardController(ILogger<DashboardController> logger, IDistributedCache cache, IRestauranteService restauranteService, IPlatilloService platilloService, IUsuarioService usuarioService)
+        public DashboardController(ILogger<DashboardController> logger, IDistributedCache cache, IRestauranteService restauranteService, IPlatilloService platilloService, IUsuarioService usuarioService, IReservaService reservaService)
         {
             _logger = logger;
             _cache = cache;
             _restauranteService = restauranteService;
             _platilloService = platilloService;
             _usuarioService = usuarioService;
+            _reservaService = reservaService;
         }
         public async Task<IActionResult> Index()
         {
             // Recupera el token de la sesión del usuario
             var sessionDataSerialized = await _cache.GetStringAsync(sessionKey);
-
+            var sessionData = System.Text.Json.JsonSerializer.Deserialize<SessionData>(sessionDataSerialized);
             if (string.IsNullOrEmpty(sessionDataSerialized))
             {
                 return RedirectToAction("Index", "Home");
             }
-
+            if (!string.IsNullOrEmpty(sessionData.nombre))
+            {
+                ViewBag.NombreUsuario = sessionData.nombre;
+            }
+            // Obtener el contador de nuevas reservaciones
+            var nuevasReservas = await _reservaService.ContarNuevasReservasAsync();
+            var contadorUsuario = await _usuarioService.ContarUsuariosAsync();
+            var contadorPlatillos = await _platilloService.ContarPlatillos();
+            var contadorRestaurantes = await _restauranteService.ContadorRestaurantes();
+            ViewBag.Restaurantes = contadorRestaurantes;
+            ViewBag.Platillos = contadorPlatillos;
+            ViewBag.Usuarios = contadorUsuario;
+            ViewBag.NuevasReservas = nuevasReservas;
             // Opcional: Puedes deserializar los datos si necesitas usarlos
             //var sessionData = System.Text.Json.JsonSerializer.Deserialize<dynamic>(sessionDataSerialized);
 

@@ -37,6 +37,8 @@
     <link href="~/assets/css/volt2.css" rel="stylesheet" />
 	<!-- SweetAlert CSS -->
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 	<style>
 		/* Estilo normal del ícono y del nombre */
 		.user-icon {
@@ -86,6 +88,27 @@
 				text-align: center; /* Centra el texto de las opciones */
 			}
 
+		.header-icons {
+			display: flex; /* Usar flexbox para alinear elementos */
+			align-items: center; /* Centra verticalmente los elementos */
+		}
+
+		.logout-btn {
+			margin-left: 10px; /* Ajustar el espacio entre los elementos */
+			padding: 5px; /* Espaciado interno */
+			border: none; /* Sin borde */
+			background-color: transparent; /* Sin fondo */
+			cursor: pointer; /* Cambia el cursor al pasar el ratón */
+			color: white; /* Color del texto */
+			font-size: 1.2rem;
+		}
+
+			.logout-btn:hover {
+				color: #F28123; /* Cambia el color al hacer hover */
+			}
+
+
+
 	</style>
 </head>
 <body>
@@ -106,22 +129,32 @@
 						<!-- menu start -->
 						<nav class="main-menu">
 							<ul>
-							
-								<li ><a href="@Url.Action("Index","Home")">Inicio</a></li>
-					
-					
+								<li><a href="@Url.Action("Index","Home")">Inicio</a></li>
+								@if (ViewBag.TieneReservas == true)
+								{
+									<li><a href="@Url.Action("Catalogo", "Restaurante")">Productos</a></li>
+								}
+
 								<li>
 									<div class="header-icons">
 										<a class="shopping-cart" href="@Url.Action("Carrito","Restaurante")"><i class="fas fa-shopping-cart"></i></a>
+
+										<!-- Contenedor del usuario -->
 										<a class="user-container" href="#" data-bs-toggle="modal" data-bs-target="#modal-form">
 											<i class="fas fa-user fa-1x user-icon"></i>
 											<span id="user-name" class="user-name">@ViewBag.NombreUsuario</span>
-
 										</a>
+										<form asp-action="Logout" asp-controller="Dashboard" method="post">
+										<!-- Botón de cierre de sesión -->
+										<button type="submit" class="btn btn-outline-secondary logout-btn"  title="Cerrar sesión">
+											<i class="fas fa-sign-out-alt"></i>
+										</button>
+										</form>
 									</div>
 								</li>
 							</ul>
 						</nav>
+
 						<a class="mobile-show search-bar-icon" href="#"></a>
 						<div class="mobile-menu"></div>
 						<!-- menu end -->
@@ -396,7 +429,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 
 	<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 	<script src="~/assets/bootstrap/js/bootstrap.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -11,5 +11,6 @@ namespace MVW_Proyecto_Mesas_Comida.Services
         Usuario GetUsuarioById(int id);
         Task<bool> UpdateUsuario(Usuario model);
         Task<bool> DeleteUsuario(int id);
+        Task<int> ContarUsuariosAsync();
     }
 }
