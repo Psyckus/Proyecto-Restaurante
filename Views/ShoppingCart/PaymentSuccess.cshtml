@@ -30,8 +30,31 @@
                 <h4>Detalles de la Compra</h4>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item"><strong>Fecha de la compra:</strong> @DateTime.Now.ToString("dd/MM/yyyy")</li>
-                    <li class="list-group-item"><strong>Total pagado:</strong> @ViewBag.Total?.ToString("C") ?? "N/A"</li>
-                    <li class="list-group-item"><strong>Número de transacción:</strong> @ViewBag.TransactionId ?? "N/A"</li>
+       
+
+                    @if (ViewBag.Total != null)
+                    {
+                        <li class="list-group-item"><strong>Total pagado:</strong> @ViewBag.Total?.ToString("C")</li>
+                    }
+                    else
+                    {
+
+                        <li class="list-group-item"><strong>Total pagado:</strong> "N/A"</li>
+                    }
+
+                    
+                    
+
+                    @if (ViewBag.TransactionId != null)
+                    {
+                        <li class="list-group-item"><strong>Número de transacción:</strong> @ViewBag.TransactionId</li>
+                    }
+                    else
+
+                    {
+                        <li class="list-group-item"><strong>Número de transacción:</strong> "N/A"</li>
+                    }
+
                 </ul>
             </div>
             <div class="col-lg-6 text-center">

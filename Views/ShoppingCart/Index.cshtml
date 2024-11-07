@@ -10,6 +10,17 @@
 
     <!-- title -->
     <title>Cart</title>
+    <style>
+  
+        .btn-update {
+            font-family: 'Poppins', sans-serif;
+            display: inline-block;
+            background-color: #F28123;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 50px;
+        }
+    </style>
 </head>
 <body>
 
@@ -63,7 +74,7 @@
                                             <form asp-action="UpdateQuantity" method="post">
                                                 <input type="number" name="quantity" value="@item.Quantity" min="1" class="quantity-input" />
                                                 <input type="hidden" name="id" value="@item.PlatilloId" />
-                                                <button type="submit" class="btn-update">Update</button>
+                                                <button type="submit" class="btn-update">Actualizar</button>
                                             </form>
                                         </td>
                                         <td class="product-total">@item.SubTotal.ToString("C")</td>
@@ -96,9 +107,9 @@
                         </table>
                         <div class="cart-buttons d-flex justify-content-between align-items-center">
                             <!-- Botón para actualizar el carrito -->
-                            <form asp-action="UpdateCart" method="post" class="me-2">
-                                <button type="submit" class="boxed-btn black">Update Cart</button>
-                            </form>
+                      @*       <form asp-action="UpdateCart" method="post" class="me-2">
+                                <button type="submit" class="btn-update">Update Cart</button>
+                            </form> *@
 
                             <!-- Botón para proceder al pago -->
                             <a asp-controller="Payment" asp-action="ProceedToPay" asp-route-amount="@Model.GetTotalCost()" class="boxed-btn black">Proceed to Pay</a>
@@ -120,8 +131,8 @@
 
                     <h2>Available Dishes</h2>
 
-                    <p>RestauranteId: @Model.RestauranteId</p>
-                    <p>Available Dishes Count: @(ViewBag.AvailableDishes != null ? ViewBag.AvailableDishes.Count : 0)</p>
+              @*       <p>RestauranteId: @Model.RestauranteId</p> *@
+                    <p>Platillos Disponibles: @(ViewBag.AvailableDishes != null ? ViewBag.AvailableDishes.Count : 0)</p>
 
                     @if (ViewBag.AvailableDishes != null && ViewBag.AvailableDishes.Count > 0)
                     {
@@ -140,7 +151,7 @@
                                         <form asp-action="Add" asp-controller="ShoppingCart" method="post">
                                             <input type="hidden" name="id" value="@platillo.platillo_id" />
                                             <input type="hidden" name="restauranteId" value="@ViewBag.RestauranteId" />
-                                            <button type="submit" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                                            <button type="submit" class="btn-update"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
                                         </form>
                                     </div>
                                 </div>

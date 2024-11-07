@@ -137,9 +137,11 @@
 
 								<li>
 									<div class="header-icons">
-										<a class="shopping-cart" href="@Url.Action("Index", "ShoppingCart")"><i class="fas fa-shopping-cart"></i></a>
 
-
+										@if (ViewBag.TieneReservas == true)
+										{
+											<a class="shopping-cart" href="@Url.Action("Index", "ShoppingCart")"><i class="fas fa-shopping-cart"></i></a>
+										}
 										<!-- Contenedor del usuario -->
 										<a class="user-container" href="#" data-bs-toggle="modal" data-bs-target="#modal-form">
 											<i class="fas fa-user fa-1x user-icon"></i>
@@ -199,11 +201,11 @@
 									</div>
 								</div>
 								<!-- End of Form -->
-								<div class="d-flex justify-content-between align-items-top mb-4">
+					@* 			<div class="d-flex justify-content-between align-items-top mb-4">
 									<div class="form-check">
 									</div>
 									<div><a href="./forgot-password.html" class="small text-right">¿Olvidó su contraseña?</a></div>
-								</div>
+								</div> *@
 							</div>
 							<!-- Campo oculto para el token de reCAPTCHA -->
 							<!-- Campo oculto para el token de reCAPTCHA -->
@@ -242,21 +244,23 @@
 							<h1 class="mb-0 h4">Registrarse como usuario </h1>
 						</div>
 						<form asp-action="Register" asp-controller="Usuarios" method="post" id="form-signup">
-							<div class="form-group mb-4">
+							<div class="form-floating mb-4">
+								<input type="text" class="form-control" id="nombre" name="Nombre" placeholder="Nombre" required>
 								<label for="nombre">Nombre</label>
-								<input type="text" class="form-control" id="nombre" name="Nombre" required>
 							</div>
-							<div class="form-group mb-4">
+							<div class="form-floating mb-4">
+								<input type="email" class="form-control" id="correo" name="Correo" placeholder="Correo electrónico" required>
 								<label for="correo">Correo electrónico</label>
-								<input type="email" class="form-control" id="correo" name="Correo" required>
 							</div>
-							<div class="form-group mb-4">
+
+							<div class="form-floating mb-4">
+								<input type="password" class="form-control" id="contrasena" name="Contrasena" placeholder="Contraseña" required>
 								<label for="contrasena">Contraseña</label>
-								<input type="password" class="form-control" id="contrasena" name="Contrasena" required>
 							</div>
-							<div class="form-group mb-4">
+
+							<div class="form-floating mb-4">
+								<input type="password" class="form-control" id="confirmar_contrasena" name="ConfirmarContrasena" placeholder="Confirmar Contraseña" required>
 								<label for="confirmar_contrasena">Confirmar Contraseña</label>
-								<input type="password" class="form-control" id="confirmar_contrasena" name="ConfirmarContrasena" required>
 							</div>
 							<div class="d-flex justify-content-center ">
 								<div class="g-recaptcha " data-sitekey="6LeS8V4qAAAAAJikCztlvJLDlpYfVSbMXL1nhJsc"></div>

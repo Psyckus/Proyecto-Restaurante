@@ -8,20 +8,45 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 public class PaymentController : Controller
 {
     private readonly PayPalService _payPalService;
     private readonly ApplicationDbContext _context;
+    private readonly IReservaService _reservaService;
+    private readonly IDistributedCache _cache;
 
-    public PaymentController(PayPalService payPalService, ApplicationDbContext context)
+    public PaymentController(PayPalService payPalService, ApplicationDbContext context, IDistributedCache cache, IReservaService reservaService)
     {
         _payPalService = payPalService;
+        _cache = cache;
+        _reservaService = reservaService;
         _context = context;
     }
 
     public async Task<IActionResult> ProceedToPay(decimal amount)
     {
+        var sessionKey = "UserSessionKey"; // Custom session key
+        var sessionDataSerialized = await _cache.GetStringAsync(sessionKey);
+
+        if (sessionDataSerialized != null)
+        {
+            var sessionData = System.Text.Json.JsonSerializer.Deserialize<SessionData>(sessionDataSerialized);
+            int usuarioId = sessionData.UsuarioId;
+
+            var reservas = await _reservaService.GetReservasPorUsuarioAsync(usuarioId);
+
+            ViewBag.NombreUsuario = !string.IsNullOrEmpty(sessionData.nombre) ? sessionData.nombre : "Invitado";
+            ViewBag.TieneReservas = reservas != null && reservas.Any();
+            ViewBag.Reservas = reservas;
+        }
+        else
+        {
+            ViewBag.NombreUsuario = "Invitado";
+            ViewBag.TieneReservas = false;
+            ViewBag.Reservas = null;
+        }
         // Update the purchase status to "pago"
         var compra = _context.Compras.FirstOrDefault(c => c.estado_compra == "Pendiente");
         if (compra != null)

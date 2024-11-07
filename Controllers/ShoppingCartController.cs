@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using MVW_Proyecto_Mesas_Comida.Data;
 using MVW_Proyecto_Mesas_Comida.Models;
 using MVW_Proyecto_Mesas_Comida.Services;
@@ -11,19 +12,42 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ShoppingCartService _cartService;
-
-        public ShoppingCartController(ApplicationDbContext context, ShoppingCartService cartService)
+        private readonly IDistributedCache _cache;
+        private readonly IReservaService _reservaService;
+        public ShoppingCartController(ApplicationDbContext context, ShoppingCartService cartService, IDistributedCache cache, IReservaService reservaService)
         {
+            _cache = cache;
             _context = context;
             _cartService = cartService;
+            _reservaService = reservaService;
         }
 
 
 
 
         // Display payment success view
-        public IActionResult PaymentSuccess()
+        public async Task<IActionResult> PaymentSuccess()
         {
+            var sessionKey = "UserSessionKey"; // Custom session key
+            var sessionDataSerialized = await _cache.GetStringAsync(sessionKey);
+
+            if (sessionDataSerialized != null)
+            {
+                var sessionData = System.Text.Json.JsonSerializer.Deserialize<SessionData>(sessionDataSerialized);
+                int usuarioId = sessionData.UsuarioId;
+
+                var reservas = await _reservaService.GetReservasPorUsuarioAsync(usuarioId);
+
+                ViewBag.NombreUsuario = !string.IsNullOrEmpty(sessionData.nombre) ? sessionData.nombre : "Invitado";
+                ViewBag.TieneReservas = reservas != null && reservas.Any();
+                ViewBag.Reservas = reservas;
+            }
+            else
+            {
+                ViewBag.NombreUsuario = "Invitado";
+                ViewBag.TieneReservas = false;
+                ViewBag.Reservas = null;
+            }
             return View();
         }
 
@@ -33,38 +57,72 @@ namespace MVW_Proyecto_Mesas_Comida.Controllers
             return View();
         }
 
-        public IActionResult Index(int? restauranteId)
+        public async Task<IActionResult> Index()
         {
-            var cart = new ShoppingCart
-            {
-                Items = _cartService.GetItems(),
-                RestauranteId = restauranteId // Set the restaurant ID here
-            };
+            var sessionKey = "UserSessionKey"; // Custom session key
+            var sessionDataSerialized = await _cache.GetStringAsync(sessionKey);
 
-            if (restauranteId.HasValue)
+            if (sessionDataSerialized != null)
             {
-                var availableDishes = _context.Platillos
-                                              .Where(p => p.restaurante_id == restauranteId.Value)
-                                              .ToList();
+                var sessionData = System.Text.Json.JsonSerializer.Deserialize<SessionData>(sessionDataSerialized);
+                int usuarioId = sessionData.UsuarioId;
 
-                ViewBag.AvailableDishes = availableDishes;
+                var reservas = await _reservaService.GetReservasPorUsuarioAsync(usuarioId);
+
+                ViewBag.NombreUsuario = !string.IsNullOrEmpty(sessionData.nombre) ? sessionData.nombre : "Invitado";
+                ViewBag.TieneReservas = reservas != null && reservas.Any();
+                ViewBag.Reservas = reservas;
             }
             else
             {
-                ViewBag.AvailableDishes = new List<Platillos>();
+                ViewBag.NombreUsuario = "Invitado";
+                ViewBag.TieneReservas = false;
+                ViewBag.Reservas = null;
             }
+            // Obtención de la sesión del restaurante
+            var sessionKeyRes = "RestauranteIdKey";
+            var sessionDataSerializedRes = await _cache.GetStringAsync(sessionKeyRes);
+            int? restauranteId = null;
+
+            if (sessionDataSerializedRes != null)
+            {
+                var sessionDataRes = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(sessionDataSerializedRes);
+                restauranteId = sessionDataRes.ContainsKey("RestauranteId") ? sessionDataRes["RestauranteId"] : (int?)null;
+            }
+
+            ViewBag.RestauranteId = restauranteId;
+
+            // Inicialización del carrito de compras
+            var cart = new ShoppingCart
+            {
+                Items = _cartService.GetItems(),
+                RestauranteId = restauranteId ?? 0 // Se asegura de no tener un valor nulo
+            };
+
+            // Consultar platillos disponibles para el restaurante
+            ViewBag.AvailableDishes = restauranteId.HasValue
+                ? _context.Platillos.Where(p => p.restaurante_id == restauranteId.Value).ToList()
+                : new List<Platillos>();
 
             return View(cart);
         }
 
         [HttpPost]
-        public IActionResult Add(int id)
+        public async Task<IActionResult> Add(int id)
         {
             var platillo = _context.Platillos.FirstOrDefault(p => p.platillo_id == id);
             if (platillo == null)
             {
                 return NotFound();
             }
+            // Guardar el restaurante_id en Redis
+            var restauranteId = platillo.restaurante_id;
+            var sessionKey = "RestauranteIdKey"; // Llave personalizada para Redis
+            var sessionData = new { RestauranteId = restauranteId };
+
+            // Serializamos el objeto para almacenarlo en Redis
+            var sessionDataSerialized = System.Text.Json.JsonSerializer.Serialize(sessionData);
+            await _cache.SetStringAsync(sessionKey, sessionDataSerialized);
 
             _cartService.AddItem(platillo, 1);
             return RedirectToAction("Index");
