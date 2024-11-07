@@ -1,0 +1,61 @@
+﻿@{
+    ViewBag.Title = "Payment Success";
+    Layout = "~/Views/Shared/_Layout.cshtml"; // Asegúrate de que apunte a tu archivo de diseño principal
+}
+
+<div class="breadcrumb-section breadcrumb-bg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2 text-center">
+                <div class="breadcrumb-text">
+                    <p>Thank You for Shopping with Us</p>
+                    <h1>Payment Success</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5 mb-5">
+    <div class="card shadow-sm p-4">
+        <div class="text-center">
+            <h1 class="display-4 text-success mb-4">¡Gracias por tu compra!</h1>
+            <p class="lead">Tu pago se ha procesado exitosamente.</p>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="row">
+            <div class="col-lg-6">
+                <h4>Detalles de la Compra</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Fecha de la compra:</strong> @DateTime.Now.ToString("dd/MM/yyyy")</li>
+                    <li class="list-group-item"><strong>Total pagado:</strong> @ViewBag.Total?.ToString("C") ?? "N/A"</li>
+                    <li class="list-group-item"><strong>Número de transacción:</strong> @ViewBag.TransactionId ?? "N/A"</li>
+                </ul>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-check-circle text-success" style="font-size: 80px; margin-top: 20px;"></i>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <p>Recibirás un correo de confirmación con los detalles de tu compra en breve.</p>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-success btn-lg mt-3">Volver al Inicio</a>
+
+            <!-- Botón para enviar confirmación por correo -->
+            <form asp-action="SendPaymentConfirmationEmail" asp-controller="Payment" method="post" class="d-inline">
+                <button type="submit" class="btn btn-primary btn-lg mt-3">Enviar Confirmación por Correo</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var payPalUrl = "@ViewBag.PayPalUrl";
+        if (payPalUrl) {
+            window.open(payPalUrl, "_blank", "width=600,height=700");
+        }
+    });
+</script>

@@ -6,9 +6,9 @@ namespace MVW_Proyecto_Mesas_Comida.Models
     public class ShoppingCart
     {
         public List<ShoppingCartItem> Items { get; set; } = new List<ShoppingCartItem>();
-
-        // Add item to cart or update quantity if item exists
-        public void AddItem(Platillos platillo, int quantity)
+		public int? RestauranteId { get; set; }  // New property to store the restaurant ID
+												 // Add item to cart or update quantity if item exists
+		public void AddItem(Platillos platillo, int quantity)
         {
             var item = Items.FirstOrDefault(i => i.PlatilloId == platillo.platillo_id);
             if (item == null)
