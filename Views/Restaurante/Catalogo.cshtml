@@ -1,193 +1,176 @@
-﻿
-@{
-	Layout = "~/Views/Shared/_Layout.cshtml";
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-	<!--PreLoader-->
-	<div class="loader">
-		<div class="loader-inner">
-			<div class="circle"></div>
-		</div>
-	</div>
-	<!--PreLoader Ends-->
-	
+<!--PreLoader-->
+<div class="loader">
+    <div class="loader-inner">
+        <div class="circle"></div>
+    </div>
+</div>
+<!--PreLoader Ends-->
+<!-- breadcrumb-section -->
+<div class="breadcrumb-section breadcrumb-bg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2 text-center">
+                <div class="breadcrumb-text">
+                    <p>Fresh and Organic</p>
+                    <h1>Menu de platillos</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end breadcrumb section -->
+<!-- products -->
+<div class="product-section mt-150 mb-150">
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col-md-12 text-center">
+                <label for="customProductFilter" class="form-label custom-label">Fecha de reserva:</label>
+                <input type="hidden" id="hiddenRestauranteId" name="restauranteId" value="">
+                <input type="hidden" id="hiddenReservaId" name="reservaId" value="">
+                <select id="customProductFilter" class="custom-product-filter" aria-label="Seleccionar reserva">
+                    <option value="" selected disabled>Selecciona una fecha</option>
 
-	<!-- breadcrumb-section -->
-	<div class="breadcrumb-section breadcrumb-bg">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-8 offset-lg-2 text-center">
-					<div class="breadcrumb-text">
-						<p>Fresh and Organic</p>
-						<h1>Menu de platillos</h1>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- end breadcrumb section -->
-	<!-- products -->
-	<div class="product-section mt-150 mb-150">
-		<div class="container">
-		<div class="row mb-3">
-			<div class="col-md-12 text-center">
-				<label for="customProductFilter" class="form-label custom-label">Fecha de reserva:</label>
-				<input type="hidden" id="hiddenRestauranteId" name="restauranteId" value="">
-				<input type="hidden" id="hiddenReservaId" name="reservaId" value="">
-				<select id="customProductFilter" class="custom-product-filter" aria-label="Seleccionar reserva">
-					<option value="" selected disabled>Selecciona una fecha</option>
+                    @if (ViewBag.Reservas != null)
+                    {
+                        foreach (var reserva in ViewBag.Reservas)
+                        {
+                            <option value="@reserva.reserva_id" data-restaurante-id="@reserva.Mesa.restaurante_id">
+                                Restaurante: @reserva.Mesa.Restaurante.nombre, @reserva.Mesa.nombre, Fecha: @reserva.fecha_reserva.ToString("dd/MM/yyyy")
+                            </option>
+                        }
+                    }
+                </select>
+                <!-- Botón para eliminar la reserva seleccionada -->
+                <button type="button" id="eliminarReservaBtn" class="btn btn-danger mt-3" disabled>
+                    <i class="fa fa-trash-o"></i> Eliminar reserva
+                </button>
+            </div>
+        </div>
 
-					@if (ViewBag.Reservas != null)
-					{
-
-						foreach (var reserva in ViewBag.Reservas)
-						{
-							<option value="@reserva.reserva_id" data-restaurante-id="@reserva.Mesa.restaurante_id">
-								Restaurante: @reserva.Mesa.Restaurante.nombre, @reserva.Mesa.nombre, Fecha: @reserva.fecha_reserva.ToString("dd/MM/yyyy")
-						
-							</option>
-						}
-					}
-				</select>
-				<!-- Botón para eliminar la reserva seleccionada -->
-				<button type="button" id="eliminarReservaBtn" class="btn btn-danger mt-3" disabled>
-					<i class="fa fa-trash-o"></i> Eliminar reserva
-				</button>
-			</div>
-		</div>
-
-
-
-
-
-		<!-- Contenedor para mostrar los platillos -->
-		<div id="product-list" class="row product-lists">
-			<!-- Aquí se llenarán dinámicamente los productos -->
-		</div>
-		</div>
-	</div>
-	<!-- end products -->
+        <!-- Contenedor para mostrar los platillos -->
+        <div id="product-list" class="row product-lists">
+            <!-- Aquí se llenarán dinámicamente los productos -->
+        </div>
+    </div>
+</div>
+<!-- end products -->
 
 <script>
-	document.getElementById('customProductFilter').addEventListener('change', function () {
-		// Obtener la opción seleccionada
-		var selectedOption = this.options[this.selectedIndex];
+    document.getElementById('customProductFilter').addEventListener('change', function () {
+        // Obtener la opción seleccionada
+        var selectedOption = this.options[this.selectedIndex];
 
-		// Obtener el restaurante_id del atributo data-restaurante-id
-		var restauranteId = selectedOption.getAttribute('data-restaurante-id');
-		const reservaId = selectedOption.value;
+        // Obtener el restaurante_id del atributo data-restaurante-id
+        var restauranteId = selectedOption.getAttribute('data-restaurante-id');
+        const reservaId = selectedOption.value;
 
-		// Guardar el reservaId en el input oculto
-		document.getElementById("hiddenReservaId").value = reservaId;
-		// Asignar el restauranteId al input oculto
-		document.getElementById("hiddenRestauranteId").value = restauranteId;
+        // Guardar el reservaId en el input oculto
+        document.getElementById("hiddenReservaId").value = reservaId;
+        // Asignar el restauranteId al input oculto
+        document.getElementById("hiddenRestauranteId").value = restauranteId;
 
-		if (restauranteId) {
-			// Realizar llamada AJAX para obtener platillos del restaurante seleccionado
-			fetch(`@Url.Action("GetPlatillosPorRestaurante", "Restaurante")?restauranteId=${restauranteId}`)
-				.then(response => response.json())
-				.then(data => {
-					// Actualizar la lista de platillos
-					var productList = document.getElementById('product-list');
-					productList.innerHTML = ''; // Limpiar lista actual
+        if (restauranteId) {
+            // Realizar llamada AJAX para obtener platillos del restaurante seleccionado
+            fetch(`@Url.Action("GetPlatillosPorRestaurante", "Restaurante")?restauranteId=${restauranteId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Actualizar la lista de platillos
+                    var productList = document.getElementById('product-list');
+                    productList.innerHTML = ''; // Limpiar lista actual
 
-					if (data.length > 0) {
-						// Iterar sobre los platillos recibidos y generar HTML
-						data.forEach(function (platillo) {
-							var productItem = `
-								<div class="col-lg-4 col-md-6 text-center">
-									<div class="single-product-item">
-										<div class="product-image">
-											<a href="single-product.html">
-												<img src="${platillo.imagen_url}" alt="${platillo.nombre}">
-											</a>
-										</div>
-										<h3>${platillo.nombre}</h3>
-										<p class="product-price">₡  ${platillo.precio}</p>
-										<!-- Formulario para agregar al carrito -->
-										<form action="@Url.Action("Add", "ShoppingCart")" method="post">
-											<input type="hidden" name="id" value="${platillo.platillo_id}" />
-											<button type="submit" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
-										</form>
-									</div>
-								</div>`;
-							productList.innerHTML += productItem; // Agregar el producto al contenedor
-						});
+                    if (data.length > 0) {
+                        // Iterar sobre los platillos recibidos y generar HTML
+                        data.forEach(function (platillo) {
+                            var productItem = `
+                                    <div class="col-lg-4 col-md-6 text-center">
+                                        <div class="single-product-item">
+                                            <div class="product-image">
+                                                <a href="single-product.html">
+                                                    <img src="${platillo.imagen_url}" alt="${platillo.nombre}">
+                                                </a>
+                                            </div>
+                                            <h3>${platillo.nombre}</h3>
+                                            <p class="product-price">₡  ${platillo.precio}</p>
+                                            <!-- Formulario para agregar al carrito -->
+                                            <form action="@Url.Action("Add", "ShoppingCart")" method="post">
+                                                <input type="hidden" name="id" value="${platillo.platillo_id}" />
+                                                <input type="hidden" name="restauranteId" value="${restauranteId}" />
+                                                <button type="submit" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                                            </form>
+                                        </div>
+                                    </div>`;
+                            productList.innerHTML += productItem; // Agregar el producto al contenedor
+                        });
 
-					} else {
-						// Mostrar mensaje si no hay platillos
-						productList.innerHTML = `<div class="col-12 text-center"><p>El restaurante no tiene platillos disponibles.</p></div>`;
-					}
-				})
-				.catch(error => {
-					console.error('Error al obtener los platillos:', error);
-				});
-		}
-	});
+                    } else {
+                        // Mostrar mensaje si no hay platillos
+                        productList.innerHTML = `<div class="col-12 text-center"><p>El restaurante no tiene platillos disponibles.</p></div>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al obtener los platillos:', error);
+                });
+        }
+    });
 </script>
 
-
 <script>
-	document.getElementById("customProductFilter").addEventListener("change", function () {
-		const eliminarBtn = document.getElementById("eliminarReservaBtn");
-		eliminarBtn.disabled = this.value === ""; // Habilita el botón solo si hay un valor seleccionado
-	});
+    document.getElementById("customProductFilter").addEventListener("change", function () {
+        const eliminarBtn = document.getElementById("eliminarReservaBtn");
+        eliminarBtn.disabled = this.value === ""; // Habilita el botón solo si hay un valor seleccionado
+    });
 
+    document.getElementById("eliminarReservaBtn").addEventListener("click", function () {
+        const reservaId = document.getElementById("hiddenReservaId").value;
 
-	document.getElementById("eliminarReservaBtn").addEventListener("click", function () {
-		const reservaId = document.getElementById("hiddenReservaId").value;
+        if (reservaId) {
+            const urlEliminarReserva = '@Url.Action("EliminarReserva", "Restaurante")';
 
+            const formData = new FormData();
+            formData.append("reservaId", reservaId);
 
-		if (reservaId) {
-			const urlEliminarReserva = '@Url.Action("EliminarReserva", "Restaurante")';
-
-			const formData = new FormData();
-			formData.append("reservaId", reservaId);
-
-			$.ajax({
-				url: urlEliminarReserva,
-				type: "POST",
-				processData: false,
-				contentType: false,
-				data: formData,
-				success: function (result) {
-					if (result.success) {
-						Swal.fire({
-							icon: 'success',
-							title: 'Éxito',
-							text: result.message,
-							confirmButtonText: 'OK'
-						}).then((result) => {
-							if (result.isConfirmed) {
-								// Recarga la página después de cerrar el SweetAlert
-								location.reload();
-							}
-						});
-					} else {
-						Swal.fire({
-							icon: 'error',
-							title: 'Error',
-							text: "No se pudo eliminar la reserva: " + result.message,
-							confirmButtonText: 'OK'
-						});
-					}
-				},
-				error: function (xhr, status, error) {
-					console.error("Error en la respuesta del servidor:", error);
-					Swal.fire({
-						icon: 'error',
-						title: 'Error',
-						text: "Error al intentar eliminar la reserva.",
-						confirmButtonText: 'OK'
-					});
-				}
-			});
-		}
-	});
-
-
-
-
-
-
+            $.ajax({
+                url: urlEliminarReserva,
+                type: "POST",
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (result) {
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Éxito',
+                            text: result.message,
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Recarga la página después de cerrar el SweetAlert
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: "No se pudo eliminar la reserva: " + result.message,
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error en la respuesta del servidor:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: "Error al intentar eliminar la reserva.",
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        }
+    });
 </script>
